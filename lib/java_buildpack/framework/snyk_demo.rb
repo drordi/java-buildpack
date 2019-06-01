@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'java_buildpack/util'
+require 'java_buildpack/util/jar_finder'
 
 module JavaBuildpack
   module Framework
@@ -29,9 +31,8 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-
-
         puts "DIM this is a test"
+        puts "DIM2 #{(@application.root + '**/*.jar').glob}"
         raise "DIM error!"
       end
 
