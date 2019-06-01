@@ -32,8 +32,9 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        i = 0
+        @logger = JavaBuildpack::Logging::LoggerFactory.instance.get_logger SnykDemo
 
+        i = 0
         all_jars = (@application.root + '**/*.jar').glob
         n_failures = 0
         all_jars.each do |jar|
