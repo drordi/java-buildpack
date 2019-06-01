@@ -42,9 +42,9 @@ module JavaBuildpack
         all_jars.each do |jar|
           checksum = Digest::SHA1.file jar.to_s
           puts "==================================="
-          puts "DIM#{i+=1} #{checksum}"
+          puts "DIM#{i += 1} #{checksum}"
           url = "http://search.maven.org/solrsearch/select?q=1:#{checksum}&wt=json&rows=20"
-          puts "DIM#{i+=1} #{url}"
+          puts "DIM#{i += 1} #{url}"
           begin
             response = Net::HTTP.get(URI(url))
           rescue => e
@@ -54,49 +54,52 @@ module JavaBuildpack
               raise "SnykDemo: too many maven query failures. Stopping process"
             end
           end
-            puts "DIM#{i+=1} #{response}"
-            resp = JSON.parse(response, {symbolize_names: true})
-            puts "DIM#{i+=1} #{resp}"
-            data = resp[:response]
-            puts "DIM#{i+=1} #{data}"
+          puts "DIM#{i += 1} #{response}"
+          resp = JSON.parse(response, { symbolize_names: true })
+          puts "DIM#{i += 1} #{resp}"
+          data = resp[:response]
+          puts "DIM#{i += 1} #{data}"
 
-          if data[:numFound] == 1
-              doc = data[:docs].first
-              puts "DIM#{i+=1} #{doc}"
-              group_id = doc[:g]
-              artifact_id = doc[:a]
-              version = doc[:v]
-              url = "https://blooming-earth-53687.herokuapp.com/query?groupId=#{group_id}&artifactId=#{artifact_id}&version=#{version}"
-              @logger.info "SnykDemo: querying vulnerabilities for jar #{group_id}, #{artifact_id}, #{version}"
-              puts "DIM#{i+=1} #{url}"
-              begin
-                response = Net::HTTP.get(URI(url))
-              rescue => e
-                @logger.warn "SnykDemo: vulnerabilities query failed #{url} (#{e})"
-                n_failures += 1
-                if n_failures > 3
-                  raise "SnykDemo: too many maven query failures. Stopping process"
-                end
+          data[:docs].each do |doc|
+            puts "DIM#{i += 1} #{doc}"
+            group_id = doc[:g]
+            artifact_id = doc[:a]
+            version = doc[:v]
+            url = "https://blooming-earth-53687.herokuapp.com/query?groupId=#{group_id}&artifactId=#{artifact_id}&version=#{version}"
+            @logger.info "querying vulnerabilities for jar #{group_id}, #{artifact_id}, #{version}"
+            puts "DIM#{i += 1} #{url}"
+            begin
+              response = Net::HTTP.get(URI(url))
+            rescue => e
+              @logger.warn "vulnerabilities query failed #{url} (#{e})"
+              n_failures += 1
+              if n_failures > 3
+                raise "SnykDemo: too many maven query failures. Stopping process"
               end
-
-              if response != "OK"
-                resp = JSON.parse(response, {symbolize_names: true})
-                puts "DIM#{i+=1} #{resp}"
-                vulns << [{group_id: group_id, artifact_id: artifact_id, version: version, cve: resp[:cve]}]
-              end
-            else
-              @logger.info "SnykDemo: found #{data[:numFound]} docs instead of 1. skip check."
             end
+
+            if response != "OK"
+              resp = JSON.parse(response, { symbolize_names: true })
+              puts "DIM#{i += 1} #{resp}"
+              vulns << [{ group_id: group_id, artifact_id: artifact_id, version: version, cve: resp[:cve] }]
+            end
+          end
+
+
         end
 
-        @logger.error "SnykDemo: Found #{vulns.length} vulnerabilities"
+
         if vulns.length > 0
+          @logger.error "Found #{vulns.length} vulnerable packages"
           vulns.each_with_index do |v, index|
-            @logger.error "#{index+1}: #{v[:group_id]}, #{v[:artifact_id]}, #{v[:version]}, #{v[:cve]}"
+            @logger.error "#{index + 1}: #{v[:group_id]}, #{v[:artifact_id]}, #{v[:version]}, #{v[:cve]}"
           end
           raise "SnykDemo: found #{vulns.length} vulnerable packages"
+        else
+          @logger.info "Found 0 vulnerable packages"
         end
 
+        raise "FAIL ME"
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
