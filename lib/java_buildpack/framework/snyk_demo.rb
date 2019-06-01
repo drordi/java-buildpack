@@ -38,11 +38,18 @@ module JavaBuildpack
         puts "DIM#{i+=1} #{foo.class}"
         puts "DIM#{i+=1} #{foo.instance_variables}"
         puts "DIM#{i+=1} #{foo.public_methods}"
-        puts "DIM#{i+=1} #{foo.Pathname}" rescue nil
-        puts "DIM#{i+=1} #{foo.to_s}" rescue nil
-        puts "DIM#{i+=1} #{Digest::SHA1.file foo.Pathname}" rescue nil
-        puts "DIM#{i+=1} #{Digest::SHA1.file foo.to_s}" rescue nil
-        puts "DIM#{i+=1} #{Digest::SHA1.file(foo.Pathname).base64digest}"
+        puts "DIM#{i+=1} #{foo.to_s}"
+        hash = Digest::SHA1.file foo.to_s
+        puts "DIM#{i+=1} #{hash}"
+
+        url = "http://search.maven.org/solrsearch/select?q=1:#{hash}&wt=json&rows=20"
+        response = HTTParty.get(url)
+        puts "DIM#{i+=1} #{response.code}"
+        puts "DIM#{i+=1} #{response.body}"
+        resp = JSON.parse(response.body)
+        puts "DIM#{i+=1} #{resp}"
+        puts "DIM#{i+=1} #{resp.as_json}"
+        puts "DIM#{i+=1} #{resp.to_json}"
         raise "DIM error!"
       end
 
