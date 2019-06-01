@@ -16,7 +16,7 @@
 # limitations under the License.
 
 require 'java_buildpack/util'
-require 'java_buildpack/util/jar_finder'
+require 'digest'
 
 module JavaBuildpack
   module Framework
@@ -34,9 +34,13 @@ module JavaBuildpack
         foo = (@application.root + '**/*.jar').glob[0]
 
         puts "DIM this is a test"
-        puts "DIM2 #{foo.class}"
-        puts "DIM3 #{foo.instance_variables}"
-        puts "DIM4 #{foo.public_methods}"
+        i = 0
+        puts "DIM#{i+=1} #{foo.class}"
+        puts "DIM#{i+=1} #{foo.instance_variables}"
+        puts "DIM#{i+=1} #{foo.public_methods}"
+        puts "DIM#{i+=1} #{foo.pathname}"
+        puts "DIM#{i+=1} #{Digest::SHA1.file foo.pathname}"
+        puts "DIM#{i+=1} #{Digest::SHA1.file(foo.pathname).base64digest}"
         raise "DIM error!"
       end
 
