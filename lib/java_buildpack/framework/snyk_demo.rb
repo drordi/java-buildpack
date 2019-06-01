@@ -38,6 +38,7 @@ module JavaBuildpack
         n_failures = 0
         all_jars.each do |jar|
           checksum = Digest::SHA1.file jar.to_s
+          puts "==================================="
           puts "DIM#{i+=1} #{checksum}"
           url = "http://search.maven.org/solrsearch/select?q=1:#{checksum}&wt=json&rows=20"
           puts "DIM#{i+=1} #{url}"
@@ -51,13 +52,21 @@ module JavaBuildpack
             if data[:numFound] == 1
               doc = data[:docs].first
               puts "DIM#{i+=1} #{doc}"
-
+              group_id = doc[:g]
+              artifact_id = doc[:a]
+              version = doc[:v]
+              url = "https://blooming-earth-53687.herokuapp.com/query?groupId=#{group_id}&artifactId=#{artifact_id}&version=#{version}"
+              @logger.info "SnykDemo: querying vulnerabilities for jar #{group_id}, #{artifact_id}, #{version}"
+              puts "DIM#{i+=1} #{url}"
+              response = Net::HTTP.get(URI(url))
+              resp = JSON.parse(response, {symbolize_names: true})
+              puts "DIM#{i+=1} #{resp}"
             else
               @logger.info "SnykDemo: found #{data[:numFound]} docs instead of 1. skip check."
             end
 
-          rescue *HTTP_ERRORS => e
-            @logger.warn "SnykDemo: maven query failed #{url}"
+          rescue => e
+            @logger.warn "SnykDemo: maven query failed #{url} (#{e})"
             n_failures += 1
             if n_failures > 3
               raise "SnykDemo: too many maven query failures. Stopping process"
