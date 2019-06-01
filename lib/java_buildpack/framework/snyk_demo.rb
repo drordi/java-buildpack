@@ -31,8 +31,12 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
+        foo = (@application.root + '**/*.jar').glob[0]
+
         puts "DIM this is a test"
-        puts "DIM2 #{(@application.root + '**/*.jar').glob}"
+        puts "DIM2 #{foo.class}"
+        puts "DIM3 #{foo.instance_variables}"
+        puts "DIM4 #{foo.public_methods}"
         raise "DIM error!"
       end
 
