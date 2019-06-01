@@ -91,6 +91,7 @@ module Package
       'spring_auto_reconfiguration' => 'Spring Auto-reconfiguration',
       'spring_boot_cli' => 'Spring Boot CLI',
       'takipi_agent' => 'Takipi Agent',
+      'snyk_demo' => 'Snyk Demo',
       'tomcat' => 'Tomcat',
       'your_kit_profiler' => 'YourKit Profiler'
     }.freeze
