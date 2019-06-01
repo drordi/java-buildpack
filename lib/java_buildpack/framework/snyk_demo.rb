@@ -17,6 +17,7 @@
 
 require 'java_buildpack/util'
 require 'digest'
+require 'net/http'
 
 module JavaBuildpack
   module Framework
@@ -43,7 +44,8 @@ module JavaBuildpack
         puts "DIM#{i+=1} #{hash}"
 
         url = "http://search.maven.org/solrsearch/select?q=1:#{hash}&wt=json&rows=20"
-        response = HTTParty.get(url)
+        puts "DIM#{i+=1} #{url}"
+        response = Net::HTTP.get(URI(url))
         puts "DIM#{i+=1} #{response.code}"
         puts "DIM#{i+=1} #{response.body}"
         resp = JSON.parse(response.body)
