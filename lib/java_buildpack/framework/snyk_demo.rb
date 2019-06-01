@@ -38,9 +38,11 @@ module JavaBuildpack
         puts "DIM#{i+=1} #{foo.class}"
         puts "DIM#{i+=1} #{foo.instance_variables}"
         puts "DIM#{i+=1} #{foo.public_methods}"
-        puts "DIM#{i+=1} #{foo.pathname}"
-        puts "DIM#{i+=1} #{Digest::SHA1.file foo.pathname}"
-        puts "DIM#{i+=1} #{Digest::SHA1.file(foo.pathname).base64digest}"
+        puts "DIM#{i+=1} #{foo.Pathname}" rescue nil
+        puts "DIM#{i+=1} #{foo.to_s}" rescue nil
+        puts "DIM#{i+=1} #{Digest::SHA1.file foo.Pathname}" rescue nil
+        puts "DIM#{i+=1} #{Digest::SHA1.file foo.to_s}" rescue nil
+        puts "DIM#{i+=1} #{Digest::SHA1.file(foo.Pathname).base64digest}"
         raise "DIM error!"
       end
 
