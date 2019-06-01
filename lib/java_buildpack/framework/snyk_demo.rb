@@ -32,26 +32,40 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        foo = (@application.root + '**/*.jar').glob[0]
-
-        puts "DIM this is a test"
         i = 0
-        puts "DIM#{i+=1} #{foo.class}"
-        puts "DIM#{i+=1} #{foo.instance_variables}"
-        puts "DIM#{i+=1} #{foo.public_methods}"
-        puts "DIM#{i+=1} #{foo.to_s}"
-        hash = Digest::SHA1.file foo.to_s
-        puts "DIM#{i+=1} #{hash}"
 
-        url = "http://search.maven.org/solrsearch/select?q=1:#{hash}&wt=json&rows=20"
-        puts "DIM#{i+=1} #{url}"
-        response = Net::HTTP.get(URI(url))
-        puts "DIM#{i+=1} #{response.code}"
-        puts "DIM#{i+=1} #{response.body}"
-        resp = JSON.parse(response.body)
-        puts "DIM#{i+=1} #{resp}"
-        puts "DIM#{i+=1} #{resp.as_json}"
-        puts "DIM#{i+=1} #{resp.to_json}"
+        all_jars = (@application.root + '**/*.jar').glob
+        n_failures = 0
+        all_jars.each do |jar|
+          checksum = Digest::SHA1.file jar.to_s
+          puts "DIM#{i+=1} #{checksum}"
+          url = "http://search.maven.org/solrsearch/select?q=1:#{checksum}&wt=json&rows=20"
+          puts "DIM#{i+=1} #{url}"
+          begin
+            response = Net::HTTP.get(URI(url))
+            puts "DIM#{i+=1} #{response}"
+            resp = JSON.parse(response, {symbolize_names: true})
+            puts "DIM#{i+=1} #{resp}"
+            data = resp[:response]
+            puts "DIM#{i+=1} #{data}"
+            if data[:numFound] == 1
+              doc = data[:docs].first
+              puts "DIM#{i+=1} #{doc}"
+
+            else
+              @logger.info "SnykDemo: found #{data[:numFound]} docs instead of 1. skip check."
+            end
+
+          rescue *HTTP_ERRORS => e
+            @logger.warn "SnykDemo: maven query failed #{url}"
+            n_failures += 1
+            if n_failures > 3
+              raise "SnykDemo: too many maven query failures. Stopping process"
+            end
+          end
+
+        end
+
         raise "DIM error!"
       end
 
